@@ -6,5 +6,5 @@ Spring
 
 Spring的模块划分图：   
 
-![Image](C:\Users\SZQ\AppData\Local\Temp\chrome_drag7880_29779\Image.png)
+![img](https://img2020.cnblogs.com/blog/2164343/202010/2164343-20201029003042233-1404968273.png)
 

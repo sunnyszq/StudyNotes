@@ -2,7 +2,7 @@ IOC
 
 Spring（IOC+AOP）
 
-![Image](C:\Users\SZQ\AppData\Local\Temp\Image.png)
+![img](https://img2020.cnblogs.com/blog/2164343/202010/2164343-20201029002952865-1303697112.png)
 
 IOC：（Inversion（反转） Of  Control）：控制反转
 
