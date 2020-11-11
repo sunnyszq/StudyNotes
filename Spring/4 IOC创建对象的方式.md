@@ -808,7 +808,7 @@ public class Client {
 代理模式的优点：
 
 - 可以使真实角色的操作更加纯粹，不用去关注一些公共的业务
-- 公共业务交给代理角色，实现了业务的分工
+- **公共业务交给代理角色，实现了业务的分工**
 - 公共业务发生扩展的时候，方便集中管理
 
 缺点：
@@ -922,4 +922,187 @@ public class Client {
 聊聊AOP：纵向开发，横向开发
 
 ![img](https://gitee.com/sunnyzq/my-image-hosting-service/raw/master/img//aHR0cHM6Ly9tbWJpei5xcGljLmNuL21tYml6X3BuZy91SkRBVUtyR0M3TG9laWNQMU8ybmZ5QTZIMFhQYTlqTUxKcWNnaWNBNWFFS3R4WWliZ0xQaWNOZkR3aWNLSW45TmxGbDg2cnJpYVZSaWNLbkVYbFBOaWFjYkhpYUxpYncvNjQw)
+
+##### 10.3 动态代理
+
+- 动态代理和静态代理角色一样
+- 动态代理的代理类是动态生成的，不是我们直接写好的。
+- 动态代理分为两大类：基于接口的动态代理，基于类的动态代理
+  - 基于接口---JDK 动态代理 【学习使用】
+  - 基于类：cglib
+  - java字节码实现：javasist
+
+
+
+需要了解两个类：Proxy:代理  InvocationHandler：调用处理程序
+
+动态代理的好处：
+
+- 可以使真实角色的操作更加纯粹，不用去关注一些公共的业务
+- **公共业务交给代理角色，实现了业务的分工**
+- 公共业务发生扩展的时候，方便集中管理
+- 一个动态代理类代理的是一个接口，一般就是对应的一类业务r
+- 一个动态代理类可以代理多个类，只要是实现了同一个接口即可。
+
+#### 11 AOP
+
+##### 11.1 什么是AOP
+
+> AOP（Aspect Oriented Programming）意为：面向切面编程，通过预编译方式和运行期动态代理实现程序功能的统一维护的一种技术。AOP是OOP的延续，是软件开发中的一个热点，也是Spring框架中的一个重要内容，是函数式编程的一种衍生范型。利用AOP可以对业务逻辑的各个部分进行隔离，从而使得业务逻辑各部分之间的耦合度降低，提高程序的可重用性，同时提高了开发的效率。
+
+![img](https://imgconvert.csdnimg.cn/aHR0cHM6Ly9tbWJpei5xcGljLmNuL21tYml6X3BuZy91SkRBVUtyR0M3SkFlVFlPYWFINnJaNldtTExnd1FMSGY1cG1IMzBnajZtWm04MVBDN2lhdWljRnU1NXNpY0p0c3BVN0szdlRDVmRaQ0RUU0hxN0Q1WEhsdy82NDA?x-oss-process=image/format,png)
+
+##### 11.2 Aop在Spring中的作用
+
+提供声明式事务；允许用户自定义切面
+
+以下名词需要了解下：
+
+- 横切关注点：跨越应用程序多个模块的方法或功能。即是，与我们业务逻辑无关的，但是我们需要关注的部分，就是横切关注点。如日志 , 安全 , 缓存 , 事务等等 ....
+- 切面（ASPECT）：横切关注点 被模块化 的特殊对象。即，它是一个类。
+- 通知（Advice）：切面必须要完成的工作。即，它是类中的一个方法。
+- 目标（Target）：被通知对象。
+- 代理（Proxy）：向目标对象应用通知之后创建的对象。
+- 切入点（PointCut）：切面通知 执行的 “地点”的定义。
+- 连接点（JointPoint）：与切入点匹配的执行点。
+
+![img](https://imgconvert.csdnimg.cn/aHR0cHM6Ly9tbWJpei5xcGljLmNuL21tYml6X3BuZy91SkRBVUtyR0M3SkFlVFlPYWFINnJaNldtTExnd1FMSFZPWjFKcFJiN1ZpYXByWkNSWHNVYkgwYlpwaWJpYVRqcWliNjhMUUhPV1ppY1N2dVU4WTFkcXVVVkd3LzY0MA?x-oss-process=image/format,png)
+
+SpringAOP中，通过Advice定义横切逻辑，Spring中支持5种类型的Advice:
+
+![img](https://imgconvert.csdnimg.cn/aHR0cHM6Ly9tbWJpei5xcGljLmNuL21tYml6X3BuZy91SkRBVUtyR0M3SkFlVFlPYWFINnJaNldtTExnd1FMSGJBV0g4aGFVUWVKMExWQnh4WDBpY0M1VFpsQmtFQkdpYmliZXk3akZyQ2JpYlB6UWNSaGtORmNHQUEvNjQw?x-oss-process=image/format,png)
+
+**即 Aop 在 不改变原有代码的情况下 , 去增加新的功能 .**
+
+##### 11.3 使用Spring实现Aop
+
+【重点】使用AOP织入，需要导入一个依赖包！
+
+```xml
+<!-- https://mvnrepository.com/artifact/org.aspectj/aspectjweaver -->
+<dependency>
+    <groupId>org.aspectj</groupId>
+    <artifactId>aspectjweaver</artifactId>
+    <version>1.9.4</version>
+</dependency>
+```
+
+**第一种方式**
+
+**通过 Spring API 实现**
+
+首先编写我们的业务接口和实现类
+
+```java
+public interface UserService {
+ 
+    public void add();
+ 
+    public void delete();
+ 
+    public void update();
+ 
+    public void search();
+ 
+}
+```
+
+```java
+public class UserServiceImpl implements UserService{
+ 
+    @Override
+    public void add() {
+        System.out.println("增加用户");
+    }
+ 
+    @Override
+    public void delete() {
+        System.out.println("删除用户");
+    }
+ 
+    @Override
+    public void update() {
+        System.out.println("更新用户");
+    }
+ 
+    @Override
+    public void search() {
+        System.out.println("查询用户");
+    }
+}
+```
+
+然后去写我们的**增强类** , 我们编写两个 , **一个前置增强 一个后置增强**
+
+```java
+public class Log implements MethodBeforeAdvice {
+ 
+    //method : 要执行的目标对象的方法
+    //objects : 被调用的方法的参数
+    //Object : 目标对象
+    @Override
+    public void before(Method method, Object[] objects, Object o) throws Throwable {
+        System.out.println( o.getClass().getName() + "的" + method.getName() + "方法被执行了");
+    }
+}
+```
+
+```java
+public class AfterLog implements AfterReturningAdvice {
+    //returnValue 返回值
+    //method被调用的方法
+    //args 被调用的方法的对象的参数
+    //target 被调用的目标对象
+    @Override
+    public void afterReturning(Object returnValue, Method method, Object[] args, Object target) throws Throwable {
+        System.out.println("执行了" + target.getClass().getName()
+        +"的"+method.getName()+"方法,"
+        +"返回值："+returnValue);
+    }
+}
+```
+
+最后去spring的文件中注册 , 并实现aop切入实现 , 注意导入约束 .
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/aop
+        http://www.springframework.org/schema/aop/spring-aop.xsd">
+
+    <!--注册bean-->
+    <bean id="userService" class="com.szq.service.UserServiceImpl"/>
+    <bean id="log" class="com.szq.log.Log"/>
+    <bean id="afterLog" class="com.szq.log.AfterLog"/>
+    <!--aop的配置-->
+    <aop:config>
+        <!--切入点  expression:表达式匹配要执行的方法-->
+        <aop:pointcut id="pointcut" expression="execution(* com.szq.service.UserServiceImpl.*(..))"/>
+        <!--执行环绕; advice-ref执行方法 . pointcut-ref切入点-->
+        <aop:advisor advice-ref="log" pointcut-ref="pointcut"/>
+        <aop:advisor advice-ref="afterLog" pointcut-ref="pointcut"/>
+    </aop:config>
+</beans>
+```
+
+测试
+
+```java
+public class MyTest {
+    @Test
+    public void test(){
+        ApplicationContext context = new ClassPathXmlApplicationContext("beans.xml");
+        UserService userService = (UserService) context.getBean("userService");
+        userService.search();
+    }
+}
+```
+
+Aop的重要性 : 很重要 . 一定要理解其中的思路 , 主要是思想的理解这一块 .
+
+Spring的Aop就是将公共的业务 (日志 , 安全等) 和领域业务结合起来 , 当执行领域业务时 , 将会把公共业务加进来 . 实现公共业务的重复利用 . 领域业务更纯粹 , 程序猿专注领域业务 , 其本质还是动态代理 .
 
