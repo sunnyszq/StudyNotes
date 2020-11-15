@@ -948,7 +948,7 @@ public class Client {
 
 ##### 11.1 什么是AOP
 
-> AOP（Aspect Oriented Programming）意为：面向切面编程，通过预编译方式和运行期动态代理实现程序功能的统一维护的一种技术。AOP是OOP的延续，是软件开发中的一个热点，也是Spring框架中的一个重要内容，是函数式编程的一种衍生范型。利用AOP可以对业务逻辑的各个部分进行隔离，从而使得业务逻辑各部分之间的耦合度降低，提高程序的可重用性，同时提高了开发的效率。
+> AOP（Aspect Oriented Programming）意为：面向切面编程，通过预编译方式和运行期动态代理实现程序功能的统一维护的一种技术。AOP是OOP面向对象的延续，是软件开发中的一个热点，也是Spring框架中的一个重要内容，是函数式编程的一种衍生范型。利用AOP可以对业务逻辑的各个部分进行隔离，从而使得业务逻辑各部分之间的耦合度降低，提高程序的可重用性，同时提高了开发的效率。
 
 ![img](https://imgconvert.csdnimg.cn/aHR0cHM6Ly9tbWJpei5xcGljLmNuL21tYml6X3BuZy91SkRBVUtyR0M3SkFlVFlPYWFINnJaNldtTExnd1FMSGY1cG1IMzBnajZtWm04MVBDN2lhdWljRnU1NXNpY0p0c3BVN0szdlRDVmRaQ0RUU0hxN0Q1WEhsdy82NDA?x-oss-process=image/format,png)
 
@@ -976,7 +976,7 @@ SpringAOP中，通过Advice定义横切逻辑，Spring中支持5种类型的Advi
 
 ##### 11.3 使用Spring实现Aop
 
-【重点】使用AOP织入，需要导入一个依赖包！
+【重点】使用AOP植入，需要导入一个依赖包！
 
 ```xml
 <!-- https://mvnrepository.com/artifact/org.aspectj/aspectjweaver -->
@@ -989,7 +989,7 @@ SpringAOP中，通过Advice定义横切逻辑，Spring中支持5种类型的Advi
 
 **第一种方式**
 
-**通过 Spring API 实现**
+**通过 Spring API 接口实现**
 
 首先编写我们的业务接口和实现类
 
@@ -1078,16 +1078,38 @@ public class AfterLog implements AfterReturningAdvice {
     <bean id="userService" class="com.szq.service.UserServiceImpl"/>
     <bean id="log" class="com.szq.log.Log"/>
     <bean id="afterLog" class="com.szq.log.AfterLog"/>
+    
+    <!--方式1 ：使用原生 Spring API接口-->
     <!--aop的配置-->
     <aop:config>
-        <!--切入点  expression:表达式匹配要执行的方法-->
+        <!--切入点 pointcut  expression:表达式匹配要执行的方法  execution：要执行的位置 -->
         <aop:pointcut id="pointcut" expression="execution(* com.szq.service.UserServiceImpl.*(..))"/>
-        <!--执行环绕; advice-ref执行方法 . pointcut-ref切入点-->
+        <!--执行环绕advisor; advice-ref执行方法 . pointcut-ref切入点-->
         <aop:advisor advice-ref="log" pointcut-ref="pointcut"/>
         <aop:advisor advice-ref="afterLog" pointcut-ref="pointcut"/>
     </aop:config>
 </beans>
 ```
+
+在使用spring框架配置AOP的时候，不管是通过XML配置文件还是注解的方式都需要定义pointcut"切入点"
+
+例如定义切入点表达式  execution (* com.sample.service.impl..*.*(..))
+
+execution()是最常用的切点函数，其语法如下所示：
+
+ **整个表达式可以分为五个部分：**
+
+ 1、execution(): 表达式主体。
+
+ 2、第一个*号：表示返回类型， *号表示所有的类型。
+
+ 3、包名：表示需要拦截的包名，后面的两个句点表示当前包和当前包的所有子包，com.sample.service.impl包、子孙包下所有类的方法。
+
+ 4、第二个*号：表示类名， *号表示所有的类。
+
+ 5、*(..):最后这个星号表示方法名， *号表示所有的方法，后面括弧里面表示方法的参数，两个句点表示任何参数。
+
+ 
 
 测试
 
@@ -1096,6 +1118,7 @@ public class MyTest {
     @Test
     public void test(){
         ApplicationContext context = new ClassPathXmlApplicationContext("beans.xml");
+        //注意 动态代理代理的是接口！！！
         UserService userService = (UserService) context.getBean("userService");
         userService.search();
     }
@@ -1106,3 +1129,140 @@ Aop的重要性 : 很重要 . 一定要理解其中的思路 , 主要是思想�
 
 Spring的Aop就是将公共的业务 (日志 , 安全等) 和领域业务结合起来 , 当执行领域业务时 , 将会把公共业务加进来 . 实现公共业务的重复利用 . 领域业务更纯粹 , 程序猿专注领域业务 , 其本质还是动态代理 .
 
+----
+
+方法二：  **自定义类来实现Aop**【主要是切面定义】
+
+目标业务类不变依旧是userServiceImpl
+
+第一步：写一个自己的切入类
+
+```java
+package com.szq.diy;
+
+
+public class DiyPiontCut {
+    public void before() {
+        System.out.println("方法执行前");
+    }
+
+    public void after() {
+        System.out.println("方法执行后");
+    }
+}
+
+```
+
+第二步：去spring中配置
+
+```xml
+ <!--方法2：自定义类-->
+    <bean id="diy" class="com.szq.diy.DiyPiontCut"/>
+
+    <aop:config>
+        <!--自定义切面 aspect  ref 是要引用的类-->
+        <aop:aspect ref="diy">
+            <!--切入点-->
+            <aop:pointcut id="point" expression="execution(* com.szq.service.UserServiceImpl.*(..))"/>
+            <!--通知-->
+            <aop:before method="before" pointcut-ref="point"/>
+            <aop:after method="after" pointcut-ref="point"/>
+        </aop:aspect>
+    </aop:config>
+
+```
+
+3.测试
+
+```java
+import com.szq.service.UserService;
+import org.junit.Test;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
+
+
+public class Mytest {
+    @Test
+    public void test(){
+        ApplicationContext context = new ClassPathXmlApplicationContext("beans.xml");
+        //注意 动态代理代理的是接口！！！
+        UserService userService = (UserService) context.getBean("userService");
+        userService.add();
+    }
+}
+
+```
+
+**第三种方式**
+
+**使用注解实现**
+
+第一步：编写一个注解实现的增强类
+
+```java
+package com.szq.diy;
+
+import org.aspectj.lang.ProceedingJoinPoint;
+import org.aspectj.lang.Signature;
+import org.aspectj.lang.annotation.After;
+import org.aspectj.lang.annotation.Around;
+import org.aspectj.lang.annotation.Aspect;
+import org.aspectj.lang.annotation.Before;
+
+/**
+ * @author szq
+ * @version 1.0
+ * @date 2020/11/12 11:13
+ */
+
+//方式3：使用注解实现AOP
+@Aspect  //标注这是一个切面
+public class AnnotationPointCut {
+    @Before("execution(* com.szq.service.UserServiceImpl.*(..))")
+    public void before() {
+        System.out.println("方法执行前");
+    }
+
+    @After("execution(* com.szq.service.UserServiceImpl.*(..))")
+    public void after() {
+        System.out.println("方法执行后");
+    }
+
+    //在环绕增强中，我们可以给定一个参数，代表我们要获取处理切入的点：
+    @Around("execution(* com.szq.service.UserServiceImpl.*(..))")
+    public void around(ProceedingJoinPoint jp) throws Throwable {
+        System.out.println("环绕前");
+
+        //获得签名
+        Signature signature = jp.getSignature();
+        System.out.println(signature);
+        //执行方法
+        Object proceed = jp.proceed(); //执行方法
+
+        System.out.println("环绕后");
+        System.out.println(proceed);
+
+    }
+}
+
+```
+
+第二步：在Spring配置文件中，注册bean，并增加支持注解的配置
+
+```xml
+   <!--方法3：-->
+    <bean id="annotationPointCut" class="com.szq.diy.AnnotationPointCut"/>
+    <!--开启注解支持    JDK（默认 proxy-target-class="false"）   cglib  proxy-target-class="true"-->
+    <aop:aspectj-autoproxy proxy-target-class="true"/>
+
+```
+
+aop:aspectj-autoproxy 说明:
+
+通过aop命名空间的<aop:aspectj-autoproxy />声明自动为spring容器中那些配置
+
+@aspectJ切面的bean创建代理，植入切面。
+
+当然，spring 在内部依旧采用AnnotationAwareAspectJAutoProxyCreator进行自动代理的创建工作，但具体实现的细节已经被<aop:aspectj-autoproxy />隐藏起来了
+
+<aop:aspectj-autoproxy />有一个proxy-target-class属性，默认为false，表示使用jdk动态代理植入增强;  当配为<aop:aspectj-autoproxy  poxy-target-class="true"/>时，表示使用CGLib动态代理技术植入增强。不过即使proxy-target-class设置为false，如果目标类没有声明接口，则spring将自动使用CGLib动态代理。
