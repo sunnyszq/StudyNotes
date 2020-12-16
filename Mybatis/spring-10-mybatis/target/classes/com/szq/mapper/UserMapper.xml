@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!--以前是写一个UserDaoImpl的实现类，现在是写mapper.xml 配置文件实现 -->
+<!--namespace = 绑定一个对应的Dao/Mapper 接口-->
+<mapper namespace="com.UserMapper">
+
+
+
+    <select id="selectUser" resultType="com.szq.pojo.User">
+        select * from user
+    </select>
+
+
+</mapper>
