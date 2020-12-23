@@ -236,6 +236,7 @@ class Solution {
     public void dfs(HashSet<String> step,int stepCount,String current,String end,String[] bank) {
         if(current.equals(end)) {
             minStepCount = Math.min(minStepCount,stepCount);
+            return;
         }
         //遍历基因库，找到与当前基因相差一个碱基的就是下一步变化的基因
         //这样步数+1 并进入下一层
@@ -317,10 +318,6 @@ class Solution {
     }
 }
 ```
-
-
-
-
 
 - https://leetcode-cn.com/problems/find-largest-value-in-each-tree-row/#/description
 
@@ -424,6 +421,93 @@ class Solution {
 ## 
 
 - https://leetcode-cn.com/problems/word-ladder/description/
+
+```java
+127. 单词接龙
+给定两个单词（beginWord 和 endWord）和一个字典，找到从 beginWord 到 endWord 的最短转换序列的长度。转换需遵循如下规则：
+
+每次转换只能改变一个字母。
+转换过程中的中间单词必须是字典中的单词。
+说明:
+
+如果不存在这样的转换序列，返回 0。
+所有单词具有相同的长度。
+所有单词只由小写字母组成。
+字典中不存在重复的单词。
+你可以假设 beginWord 和 endWord 是非空的，且二者不相同。
+示例 1:
+
+输入:
+beginWord = "hit",
+endWord = "cog",
+wordList = ["hot","dot","dog","lot","log","cog"]
+
+输出: 5
+
+解释: 一个最短转换序列是 "hit" -> "hot" -> "dot" -> "dog" -> "cog",
+     返回它的长度 5。
+示例 2:
+
+输入:
+beginWord = "hit"
+endWord = "cog"
+wordList = ["hot","dot","dog","lot","log"]
+
+输出: 0
+
+解释: endWord "cog" 不在字典中，所以无法进行转换。
+```
+
+```java
+class Solution {
+    public int ladderLength(String beginWord, String endWord, List<String> wordList) {
+        //BFS
+        //将字典中的单词放到set中，方便查询
+        Set<String> dictSet = new HashSet<>(wordList);
+        //记录单词是否被访问过
+        Set<String> visit = new HashSet<>();
+        Queue<String> queue = new LinkedList<>();
+
+        queue.add(beginWord);
+        int minlen = 1;
+        while(!queue.isEmpty()) {
+            int level = queue.size();
+            for(int i = 0;i<level;i++) {
+                //出队
+                String word = queue.poll();
+                //遍历每个单词，修改它的每个字符使它成为一个新单词
+                //并且查看这个新单词是否在字典中，如果在且没有被访问，就加入队列
+                for(int j = 0;j<word.length();j++) {
+                    char[] ch = word.toCharArray();
+                    for(char c= 'a';c<='z';c++) {
+                        if(c == word.charAt(j))
+                            continue;
+                        ch[j] = c;         //修改字符
+                        //新单词
+                        String newWord = String.valueOf(ch);
+                        //查看字典
+                        if(dictSet.contains(newWord) && visit.add(newWord)) {
+                            //判断是否是endword
+                            if(newWord.equals(endWord)) {
+                                return minlen + 1;
+                            }
+                            queue.add(newWord);
+                        }
+                    }
+                }
+            }
+            //每向外扩展一圈，长度+1
+            minlen++;
+        }
+        
+         return 0;
+    }
+   
+}
+```
+
+
+
 - https://leetcode-cn.com/problems/word-ladder-ii/description/
 - https://leetcode-cn.com/problems/number-of-islands/
 - https://leetcode-cn.com/problems/minesweeper/description/
